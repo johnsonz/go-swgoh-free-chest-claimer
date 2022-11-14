@@ -1,0 +1,19 @@
+{
+    "Players": [
+        {
+            "Nickname": "Johnson",
+            "Email": "xxx@gmail.com",
+            "PayoutTime": "17:00",
+            "Skip": false
+        }
+    ],
+    "Discord": {
+        "Token": "",
+        "Guild": "",
+        "RemoveCommands": true,
+        "AutoMsgToChannel": ""
+    },
+    "Mbox": {
+        "Path": "/var/mail/johnson"
+    }
+}
