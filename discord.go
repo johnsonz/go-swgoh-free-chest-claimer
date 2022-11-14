@@ -86,6 +86,13 @@ var (
 			}
 			if nickname == "" && email == "" {
 				content = "> Nickname or email is required"
+				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Content: content,
+					},
+				})
+				return
 			} else {
 				content = "> Please wait..."
 			}
