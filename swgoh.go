@@ -95,8 +95,8 @@ func claim(player Player) (ok bool, itemName string, msg string) {
 	authCode := sendCode(AuthRequestOtcReq{Email: player.Email})
 	if authCode.AuthId != "" && authCode.AuthToken != "" {
 		code := ""
-		for i := 0; i < 10; i++ {
-			time.Sleep(time.Second * 30)
+		for i := 0; i < 60; i++ {
+			time.Sleep(time.Second * 5)
 			code = getCodeFromEmail(player.Email)
 			if code != "" {
 				break
