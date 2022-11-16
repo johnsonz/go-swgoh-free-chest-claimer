@@ -101,8 +101,9 @@ var (
 				},
 			})
 
-			for _, player := range config.Players {
+			for i, player := range config.Players {
 				if player.Nickname == nickname || player.Email == email {
+					config.Players[i].LastClaimedDate = time.Now().Format(dateLayout)
 					if ok, item, msg := claim(player); ok {
 						content = fmt.Sprintf(contentSucceeded, player.Nickname, item, time.Now().Format(datetimeLayout))
 					} else {

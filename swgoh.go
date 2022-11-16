@@ -128,8 +128,7 @@ func claim(player Player) (ok bool, itemName string, msg string) {
 								(item.StoreTab == "PACK" || item.StoreTab == "WEB_PACK") {
 								purchaseResp := storePurchase(authPlayer, purchaseReq)
 								if purchaseResp.State == "SUCCEEDED" {
-									player.LastClaimedDate = time.Now().Format(dateLayout)
-									return true, itemName, ""
+									return true, itemName, "succeed"
 								}
 								return false, itemName, "claim failed"
 							}
