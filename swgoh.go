@@ -125,7 +125,7 @@ func claim(player Player) (ok bool, itemName string, msg string) {
 							if (item.Offers[0].AvailableAtEpoch == 0 || item.Offers[0].AvailableAtEpoch < t) &&
 								(item.EndTime == 0 || item.EndTime > t) &&
 								(item.StartTime == 0 || item.StartTime <= t) &&
-								item.StoreTab == "PACK" {
+								(item.StoreTab == "PACK" || item.StoreTab == "WEB_PACK") {
 								purchaseResp := storePurchase(authPlayer, purchaseReq)
 								if purchaseResp.State == "SUCCEEDED" {
 									player.LastClaimedDate = time.Now().Format(dateLayout)
@@ -133,7 +133,7 @@ func claim(player Player) (ok bool, itemName string, msg string) {
 								}
 								return false, itemName, "claim failed"
 							}
-							return false, itemName, "already claimed"
+							return false, itemName, "can't find item or you have claimed it"
 						}
 					}
 				}
