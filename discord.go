@@ -26,9 +26,7 @@ const (
 var dgSession *discordgo.Session
 
 func init() {
-	var err error
-	dgSession, err = discordgo.New("Bot " + config.Discord.Token)
-	checkErr("invalid discord bot parameters: ", err, Error)
+	go openDiscord()
 }
 
 var (
@@ -121,7 +119,11 @@ var (
 )
 var registeredCommands = make([]*discordgo.ApplicationCommand, len(commands))
 
-func init() {
+func openDiscord() {
+	var err error
+	dgSession, err = discordgo.New("Bot " + config.Discord.Token)
+	checkErr("invalid discord bot parameters: ", err, Error)
+
 	dgSession.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if h, ok := commandHandlers[i.ApplicationCommandData().Name]; ok {
 			h(s, i)
@@ -130,7 +132,7 @@ func init() {
 	dgSession.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
 		//Log in
 	})
-	err := dgSession.Open()
+	err = dgSession.Open()
 	checkErr("open discord seesion error: ", err, Error)
 
 	for i, v := range commands {
@@ -158,7 +160,6 @@ func init() {
 }
 
 func sendDiscordMessage(content string) {
-	log.Println(content)
 	if config.Discord.AutoMsgToChannel != "" {
 		dgSession.ChannelMessageSend(config.Discord.AutoMsgToChannel, content)
 	}
