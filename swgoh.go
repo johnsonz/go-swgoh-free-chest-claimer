@@ -90,8 +90,15 @@ type AuthCodeCheckReq struct {
 	PhoneNumber string `json:"phoneNumber"`
 	CountryCode string `json:"countryCode"`
 }
+type ItemClaim struct {
+	Name      string
+	Message   string
+	IsSucceed bool
+	StartTime int64
+}
 
-func claim(player Player) (ok bool, itemName string, msg string) {
+func claim(player Player) (items []ItemClaim) {
+	itemName := ""
 	authCode := sendCode(AuthRequestOtcReq{Email: player.Email})
 	if authCode.AuthId != "" && authCode.AuthToken != "" {
 		code := ""
@@ -122,26 +129,34 @@ func claim(player Player) (ok bool, itemName string, msg string) {
 							}
 							itemName = item.Name
 							t := time.Now().Unix()
-							if (item.Offers[0].AvailableAtEpoch == 0 || item.Offers[0].AvailableAtEpoch < t) &&
-								(item.EndTime == 0 || item.EndTime > t) &&
-								(item.StartTime == 0 || item.StartTime <= t) &&
+							if offer.AvailableAtEpoch < t && item.EndTime > t && item.StartTime <= t &&
 								(item.StoreTab == "PACK" || item.StoreTab == "WEB_PACK") {
 								purchaseResp := storePurchase(authPlayer, purchaseReq)
 								if purchaseResp.State == "SUCCEEDED" {
-									return true, itemName, "succeed"
+									items = append(items, ItemClaim{Name: itemName, Message: "Succeeded", IsSucceed: true})
+								} else {
+									items = append(items, ItemClaim{Name: itemName, Message: "Failed", IsSucceed: false})
 								}
-								return false, itemName, "claim failed"
+							} else {
+								if item.StartTime > t {
+									items = append(items, ItemClaim{Name: itemName, Message: "Not yet started", IsSucceed: false, StartTime: item.StartTime})
+								} else {
+									items = append(items, ItemClaim{Name: itemName, Message: "Can't find item or you have claimed it", IsSucceed: false, StartTime: item.StartTime})
+								}
 							}
-							return false, itemName, "can't find item or you have claimed it"
 						}
 					}
 				}
+			} else {
+				items = append(items, ItemClaim{Name: itemName, Message: "Log in failed", IsSucceed: false})
 			}
-			return false, itemName, "log in failed"
+		} else {
+			items = append(items, ItemClaim{Name: itemName, Message: "Get code from email failed", IsSucceed: false})
 		}
-		return false, itemName, "get code from email failed"
+	} else {
+		items = append(items, ItemClaim{Name: itemName, Message: "Send code failed", IsSucceed: false})
 	}
-	return false, itemName, "send code failed"
+	return items
 }
 
 func sendCode(authRequestOtcReq AuthRequestOtcReq) Auth {

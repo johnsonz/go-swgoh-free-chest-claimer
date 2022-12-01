@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -23,11 +22,8 @@ func main() {
 				log.Println(strings.Repeat("*", 100))
 				log.Println(player.Nickname, player.Email)
 				var content string
-				if ok, item, msg := claim(player); ok {
-					content = fmt.Sprintf(contentSucceeded, player.Nickname, item, time.Now().Format(datetimeLayout))
-				} else {
-					content = fmt.Sprintf(contentFalied, player.Nickname, item, msg, time.Now().Format(datetimeLayout))
-				}
+				items := claim(player)
+				content = parseItemClaimMessage(items, player.Nickname)
 				sendDiscordMessage(content)
 			}
 		}

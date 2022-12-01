@@ -11,16 +11,16 @@ import (
 )
 
 const (
-	datetimeLayout   = "2006-01-02 15:04:05"
-	contentSucceeded = "Congratulations! You have claimed your daily free chest in web store.\n" +
+	datetimeLayout     = "2006-01-02 15:04:05"
+	datetimeZoneLayout = "2006-01-02 15:04:05 -0700"
+	contentSucceed     = "Congratulations! You have claimed your daily free chest in web store.\n" +
 		"> Nickname: %s\n" +
 		"> Item: %s\n" +
 		"> Time: %s\n"
 	contentFalied = "Someting went wrong when claiming daily free chest in web store.\n" +
 		"> Nickname: %s\n" +
 		"> Item: %s\n" +
-		"> Message: %s\n" +
-		"> Time: %s\n"
+		"> Message: %s\n"
 )
 
 var dgSession *discordgo.Session
@@ -104,11 +104,8 @@ var (
 			for i, player := range config.Players {
 				if player.Nickname == nickname || player.Email == email {
 					config.Players[i].LastClaimedDate = time.Now().Format(dateLayout)
-					if ok, item, msg := claim(player); ok {
-						content = fmt.Sprintf(contentSucceeded, player.Nickname, item, time.Now().Format(datetimeLayout))
-					} else {
-						content = fmt.Sprintf(contentFalied, player.Nickname, item, msg, time.Now().Format(datetimeLayout))
-					}
+					items := claim(player)
+					content = parseItemClaimMessage(items, player.Nickname)
 				}
 			}
 			_, err := s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
@@ -164,4 +161,21 @@ func sendDiscordMessage(content string) {
 	if config.Discord.AutoMsgToChannel != "" {
 		dgSession.ChannelMessageSend(config.Discord.AutoMsgToChannel, content)
 	}
+}
+
+func parseItemClaimMessage(items []ItemClaim, playerName string) string {
+	msg := ""
+	for _, item := range items {
+		if item.IsSucceed {
+			msg += fmt.Sprintf(contentSucceed, playerName, item.Name, time.Now().Format(datetimeLayout))
+		} else {
+			msg += fmt.Sprintf(contentFalied, playerName, item.Name, item.Message)
+			if item.StartTime == 0 {
+				msg += "> Time: " + time.Now().Format(datetimeLayout) + "\n"
+			} else {
+				msg += "> Start Time: " + time.Unix(item.StartTime, 0).Format(datetimeZoneLayout) + "\n"
+			}
+		}
+	}
+	return msg
 }
