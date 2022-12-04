@@ -141,7 +141,7 @@ func claim(player Player) (items []ItemClaim) {
 								if item.StartTime > t {
 									items = append(items, ItemClaim{Name: itemName, Message: "Not yet started", IsSucceed: false, StartTime: item.StartTime})
 								} else {
-									items = append(items, ItemClaim{Name: itemName, Message: "Can't find item or you have claimed it", IsSucceed: false, StartTime: item.StartTime})
+									items = append(items, ItemClaim{Name: itemName, Message: "You have claimed it", IsSucceed: false, StartTime: item.StartTime})
 								}
 							}
 						}

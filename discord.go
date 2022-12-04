@@ -23,6 +23,7 @@ const (
 		"> Message: %s\n"
 )
 
+var NumMapping = []string{"first", "second", "third", "forth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth"}
 var dgSession *discordgo.Session
 
 func init() {
@@ -73,9 +74,8 @@ var (
 			for _, opt := range options {
 				optionMap[opt.Name] = opt
 			}
-			nickname := ""
-			email := ""
-			content := ""
+			var nickname, email, content string
+			var embeds []*discordgo.MessageEmbed
 			if option, ok := optionMap["nickname"]; ok {
 				nickname = option.StringValue()
 			}
@@ -105,11 +105,16 @@ var (
 				if player.Nickname == nickname || player.Email == email {
 					config.Players[i].LastClaimedDate = time.Now().Format(dateLayout)
 					items := claim(player)
-					content = parseItemClaimMessage(items, player.Nickname)
+					embeds = append(embeds, generateMessageEmbed(items, player.Nickname))
 				}
+			}
+			content = ""
+			if len(embeds) == 0 {
+				content = "> There is no any free chest now."
 			}
 			_, err := s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
 				Content: &content,
+				Embeds:  &embeds,
 			})
 			checkErr("send message to discord error: ", err, Info)
 		},
@@ -163,7 +168,13 @@ func sendDiscordMessage(content string) {
 	}
 }
 
-func parseItemClaimMessage(items []ItemClaim, playerName string) string {
+func sendDiscordMessageEmbed(embed *discordgo.MessageEmbed) {
+	if config.Discord.AutoMsgToChannel != "" {
+		dgSession.ChannelMessageSendEmbed(config.Discord.AutoMsgToChannel, embed)
+	}
+}
+
+func generateMessage(items []ItemClaim, playerName string) string {
 	msg := ""
 	for _, item := range items {
 		if item.IsSucceed {
@@ -178,4 +189,27 @@ func parseItemClaimMessage(items []ItemClaim, playerName string) string {
 		}
 	}
 	return msg
+}
+func generateMessageEmbed(items []ItemClaim, playerName string) *discordgo.MessageEmbed {
+	var fields []*discordgo.MessageEmbedField
+	for i, item := range items {
+		name := fmt.Sprintf("The %s free chest", NumMapping[i])
+		if item.IsSucceed {
+			fields = append(fields, &discordgo.MessageEmbedField{
+				Name:  name,
+				Value: fmt.Sprintf("%sItem: %s\nMessage: %s%s", "```", item.Name, "Successful", "```"),
+			})
+		} else {
+			fields = append(fields, &discordgo.MessageEmbedField{
+				Name:  name,
+				Value: fmt.Sprintf("%sItem: %s\nMessage: %s\nStart: %s%s", "```", item.Name, item.Message, time.Unix(item.StartTime, 0).Format(dateLayout), "```"),
+			})
+		}
+	}
+	return &discordgo.MessageEmbed{
+		Color:     0xff0000,
+		Title:     fmt.Sprintf("Daily free chests for [%s]", playerName),
+		Fields:    fields,
+		Timestamp: time.Now().Format(time.RFC3339),
+	}
 }

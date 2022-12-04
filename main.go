@@ -21,10 +21,9 @@ func main() {
 				config.Players[i].LastClaimedDate = time.Now().Format(dateLayout)
 				log.Println(strings.Repeat("*", 100))
 				log.Println(player.Nickname, player.Email)
-				var content string
 				items := claim(player)
-				content = parseItemClaimMessage(items, player.Nickname)
-				sendDiscordMessage(content)
+				content := generateMessageEmbed(items, player.Nickname)
+				sendDiscordMessageEmbed(content)
 			}
 		}
 	}
