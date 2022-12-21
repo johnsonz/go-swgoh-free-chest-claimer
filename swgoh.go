@@ -16,8 +16,9 @@ const (
 )
 
 type Auth struct {
-	AuthId    string
-	AuthToken string
+	AuthId       string
+	AuthToken    string
+	RefreshToken string
 }
 type PurchaseResp struct {
 	CurrencyCode             string
@@ -89,6 +90,7 @@ type AuthCodeCheckReq struct {
 	Email       string `json:"email"`
 	PhoneNumber string `json:"phoneNumber"`
 	CountryCode string `json:"countryCode"`
+	RememberMe  bool   `json:"rememberMe"`
 }
 type ItemClaim struct {
 	Name      string
@@ -110,7 +112,12 @@ func claim(player Player) (items []ItemClaim) {
 			}
 		}
 		if code != "" {
-			authPlayer := checkCode(authCode, AuthCodeCheckReq{Code: code, Email: player.Email, PhoneNumber: "", CountryCode: ""})
+			authPlayer := checkCode(authCode, AuthCodeCheckReq{
+				Code:        code,
+				Email:       player.Email,
+				PhoneNumber: "",
+				CountryCode: "",
+				RememberMe:  true})
 			if authPlayer.AuthId != "" && authPlayer.AuthToken != "" {
 				store := getStoreOffers(authPlayer)
 				for _, item := range store.Items {

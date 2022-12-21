@@ -23,7 +23,7 @@ const (
 		"> Message: %s\n"
 )
 
-var NumMapping = []string{"first", "second", "third", "forth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth"}
+var NumMapping = []string{"I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"}
 var dgSession *discordgo.Session
 
 func init() {
@@ -193,16 +193,16 @@ func generateMessage(items []ItemClaim, playerName string) string {
 func generateMessageEmbed(items []ItemClaim, playerName string) *discordgo.MessageEmbed {
 	var fields []*discordgo.MessageEmbedField
 	for i, item := range items {
-		name := fmt.Sprintf("The %s free chest", NumMapping[i])
+		name := NumMapping[i]
 		if item.IsSucceed {
 			fields = append(fields, &discordgo.MessageEmbedField{
 				Name:  name,
-				Value: fmt.Sprintf("%sItem: %s\nMessage: %s%s", "```", item.Name, "Successful", "```"),
+				Value: fmt.Sprintf("```Item: %s\nMessage: %s```", item.Name, "Successful"),
 			})
 		} else {
 			fields = append(fields, &discordgo.MessageEmbedField{
 				Name:  name,
-				Value: fmt.Sprintf("%sItem: %s\nMessage: %s\nStart: %s%s", "```", item.Name, item.Message, time.Unix(item.StartTime, 0).Format(dateLayout), "```"),
+				Value: fmt.Sprintf("```Item: %s\nMessage: %s\nStart: %s```", item.Name, item.Message, time.Unix(item.StartTime, 0).Format(dateLayout)),
 			})
 		}
 	}
