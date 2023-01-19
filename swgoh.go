@@ -136,8 +136,7 @@ func claim(player Player) (items []ItemClaim) {
 							}
 							itemName = item.Name
 							t := time.Now().Unix()
-							if offer.AvailableAtEpoch < t && item.EndTime > t && item.StartTime <= t &&
-								(item.StoreTab == "PACK" || item.StoreTab == "WEB_PACK") {
+							if offer.AvailableAtEpoch < t && item.EndTime > t && item.StartTime <= t {
 								purchaseResp := storePurchase(authPlayer, purchaseReq)
 								if purchaseResp.State == "SUCCEEDED" {
 									items = append(items, ItemClaim{Name: itemName, Message: "Succeeded", IsSucceed: true})
