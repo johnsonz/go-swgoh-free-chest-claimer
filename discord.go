@@ -74,26 +74,9 @@ var (
 			for _, opt := range options {
 				optionMap[opt.Name] = opt
 			}
-			var nickname, email, content string
-			var embeds []*discordgo.MessageEmbed
-			if option, ok := optionMap["nickname"]; ok {
-				nickname = option.StringValue()
-			}
-			if option, ok := optionMap["email"]; ok {
-				email = option.StringValue()
-			}
-			if nickname == "" && email == "" {
-				content = "> Nickname or email is required"
-				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionResponseData{
-						Content: content,
-					},
-				})
-				return
-			} else {
-				content = "> Please wait..."
-			}
+			var nickname, email string
+			content := "> Please wait..."
+
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
@@ -101,22 +84,35 @@ var (
 				},
 			})
 
-			for i, player := range config.Players {
-				if player.Nickname == nickname || player.Email == email {
-					config.Players[i].LastClaimedDate = time.Now().Format(dateLayout)
+			var embeds []*discordgo.MessageEmbed
+			if option, ok := optionMap["nickname"]; ok {
+				nickname = option.StringValue()
+			}
+			if option, ok := optionMap["email"]; ok {
+				email = option.StringValue()
+			}
+
+			for index, player := range config.Players {
+				if player.Nickname == nickname || player.Email == email || player.DiscordId == i.Member.User.ID {
+					config.Players[index].LastClaimedDate = time.Now().Format(dateLayout)
 					items := claim(player)
 					embeds = append(embeds, generateMessageEmbed(items, player.Nickname))
+					content = ""
+					if len(embeds) == 0 {
+						content = "> There is no any free chest now."
+					}
+					_, err := s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+						Content: &content,
+						Embeds:  &embeds,
+					})
+					checkErr("send message to discord error: ", err, Info)
+					return
 				}
 			}
-			content = ""
-			if len(embeds) == 0 {
-				content = "> There is no any free chest now."
-			}
-			_, err := s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+			content = "> Nickname or email is incorrect"
+			s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
 				Content: &content,
-				Embeds:  &embeds,
 			})
-			checkErr("send message to discord error: ", err, Info)
 		},
 	}
 )

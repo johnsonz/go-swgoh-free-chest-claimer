@@ -15,6 +15,7 @@ type Config struct {
 type Player struct {
 	Nickname        string `json:"Nickname"`
 	Email           string `json:"Email"`
+	DiscordId       string `json:"DiscordId"`
 	Skip            bool   `json:"Skip"`
 	LastClaimedDate string
 }
