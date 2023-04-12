@@ -3,6 +3,7 @@
         {
             "Nickname": "Johnson",
             "Email": "xxx@gmail.com",
+            "DiscordId": "",
             "PayoutTime": "17:00",
             "Skip": false
         }
